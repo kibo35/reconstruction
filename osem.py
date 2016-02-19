@@ -68,8 +68,9 @@ for iter in xrange(niter):
         recon   *= bp / (wgts[sub] + 1e-6)
 
 fbp = iradon(sinogram, theta=theta, circle=True)
-fbp = gaussian_filter(fbp, 1.333 / 2.355)
-recon   = gaussian_filter(recon, 1.333 / 2.355)
+if sfwhm > 0:
+    fbp = gaussian_filter(fbp, sfwhm / 2.355)
+    recon   = gaussian_filter(recon, sfwhm / 2.355)
 
 # display
 plt.figure(figsize = (10, 5))
