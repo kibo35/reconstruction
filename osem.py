@@ -33,8 +33,8 @@ theta = np.linspace(0., 180., max(image.shape), endpoint=False)
 sinogram    = radon(image, theta=theta, circle=True)
 
 # add noise
-val = sinogram.sum()
 if count > 0:
+    val = sinogram.sum()
     sinogram    = np.random.poisson(sinogram / val * count).astype(np.float)
     sinogram    *= val / count
 
