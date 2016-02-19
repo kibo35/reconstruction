@@ -14,7 +14,7 @@ from scipy.ndimage import gaussian_filter1d
 parser = argparse.ArgumentParser(description='Simulation of OSEM')
 parser.add_argument('--count', '-c', default=2e6, type=float,
                     help='slice total count. Poisson noise equivalent to COUNT is added to sinogram. If COUNT is zero, no noise is added to sinogram (true).')
-parser.add_argument('--niter', '-i', default=5, type=int,
+parser.add_argument('--niter', '-i', default=8, type=int,
                     help='number of iteration')
 parser.add_argument('--nsub', '-s', default=10, type=int,
                     help='number of subset')
