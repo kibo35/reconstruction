@@ -13,11 +13,11 @@ from scipy.ndimage import gaussian_filter1d
 
 parser = argparse.ArgumentParser(description='Simulation of OSEM')
 parser.add_argument('--count', '-c', default=2e6, type=float,
-                    help='slice total count. Poisson noise equivalent to COUNT is added to sinogram. If COUNT is zero, no noise is added to sinogram (true)')
-parser.add_argument('--niter', '-i', default=5, type=float,
-                    help='number of main iteration')
-parser.add_argument('--nsub', '-s', default=10, type=float,
-                    help='number of sub iteration')
+                    help='slice total count. Poisson noise equivalent to COUNT is added to sinogram. If COUNT is zero, no noise is added to sinogram (true).')
+parser.add_argument('--niter', '-i', default=5, type=int,
+                    help='number of iteration')
+parser.add_argument('--nsub', '-s', default=10, type=int,
+                    help='number of subset')
 args = parser.parse_args()
 
 count   = args.count
@@ -54,7 +54,6 @@ for sub in xrange(nsub):
     wgts.append(wgt)
 
 # iteration
-recons  = []
 for iter in xrange(niter):
     print   'iter', iter
     order   = np.random.permutation(range(nsub))
@@ -64,7 +63,6 @@ for iter in xrange(niter):
         ratio   = sinogram[:, views] / (fp + 1e-6)
         bp  = iradon(ratio, theta=theta[views], filter=None, circle=True)
         recon   *= bp / (wgts[sub] + 1e-6)
-    recons.append(recon.copy())
 
 # display
 plt.figure(figsize = (10, 5))
