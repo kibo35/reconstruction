@@ -67,9 +67,8 @@ for iter in xrange(niter):
     recons.append(recon.copy())
 
 # display
-plt.figure()
+plt.figure(figsize = (10, 5))
 plt.gray()
-plt.suptitle('Simulation of OSEM, {:.0e} [count]'.format(count))
 plt.subplot(121)
 plt.title('FBP, ramp')
 plt.imshow(iradon(sinogram, theta=theta, circle=True), vmin = 0, vmax = 1)
