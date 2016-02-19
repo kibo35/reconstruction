@@ -76,11 +76,11 @@ if sfwhm > 0:
 plt.figure(figsize = (10, 5))
 plt.gray()
 plt.subplot(121)
-plt.title('FBP, ramp')
+plt.title('FBP, ramp, RMSE = {:.3f}'.format(np.sqrt((fbp - image) ** 2).mean()))
 plt.imshow(fbp, vmin = 0, vmax = 1)
 plt.axis('off')
 plt.subplot(122)
-plt.title('OSEM, {} iteration, {} subset'.format(niter, nsub))
+plt.title('OSEM, {} iteration, {} subset, RMSE = {:.3f}'.format(niter, nsub, np.sqrt((recon - image) ** 2).mean()))
 plt.imshow(recon, vmax = 1)
 plt.axis('off')
 
