@@ -79,5 +79,3 @@ plt.axis('off')
 plt.subplots_adjust(0, 0, 1, 0.9, 0, 0.1)
 plt.savefig('osem.png')
 plt.show()
-
-
