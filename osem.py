@@ -37,6 +37,7 @@ theta = np.linspace(0., 180., max(image.shape), endpoint=False)
 sinogram    = radon(image, theta=theta, circle=True)
 
 # add noise
+np.random.seed(0)
 if count > 0:
     val = sinogram.sum()
     sinogram    = np.random.poisson(sinogram / val * count).astype(np.float)
@@ -44,7 +45,7 @@ if count > 0:
 
 # initial
 recon   = np.zeros(shape)
-rr, cc  = circle(shape[0] / 2 - 0.5, shape[1] / 2 - 0.5, shape[0] / 2 - 1)
+rr, cc  = circle(shape[0] / 2, shape[1] / 2, shape[0] / 2 - 1)
 recon[rr, cc]   = 1
 
 # normalization matrix
