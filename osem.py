@@ -20,12 +20,15 @@ parser.add_argument('--nsub', '-s', default=10, type=int,
                     help='number of subset')
 parser.add_argument('--filter', '-f', default=1.333, type=float,
                     help='smoothing filer FWHM [pix]')
+parser.add_argument('--objective', '-o', action='store_true',
+                    help='display objective function (negative log likelihood)')
 args = parser.parse_args()
 
 count   = args.count
 niter   = args.niter
 nsub    = args.nsub
 sfwhm   = args.filter
+obj     = args.objective
 
 # shepp-logan phantom
 image   = imread(data_dir + "/phantom.png", as_grey=True)
@@ -37,7 +40,6 @@ theta = np.linspace(0., 180., max(image.shape), endpoint=False)
 sinogram    = radon(image, theta=theta, circle=True)
 
 # add noise
-np.random.seed(0)
 if count > 0:
     val = sinogram.sum()
     sinogram    = np.random.poisson(sinogram / val * count).astype(np.float)
@@ -58,6 +60,7 @@ for sub in xrange(nsub):
     wgts.append(wgt)
 
 # iteration
+objs    = []
 for iter in xrange(niter):
     print   'iter', iter
     order   = np.random.permutation(range(nsub))
@@ -67,6 +70,13 @@ for iter in xrange(niter):
         ratio   = sinogram[:, views] / (fp + 1e-6)
         bp  = iradon(ratio, theta=theta[views], filter=None, circle=True)
         recon   *= bp / (wgts[sub] + 1e-6)
+
+        if obj:
+            fp  = radon(recon, theta=theta, circle=True)
+            ndx = np.where(fp > 0)
+            val = -(sinogram[ndx] * np.log(fp[ndx]) - fp[ndx]).sum() / 1e6
+            print   val
+            objs.append(val)
 
 fbp = iradon(sinogram, theta=theta, circle=True)
 if sfwhm > 0:
@@ -97,5 +107,14 @@ plt.legend(loc=3, prop={'size':10})
 plt.xlabel('X [pix]')
 plt.ylabel('[a.u.]')
 plt.savefig('profile.png')
+
+if obj:
+    objs    = np.array(objs)
+    plt.figure()
+    plt.suptitle('Convergence')
+    plt.plot(objs, '.-')
+    plt.xlabel('sub iteration')
+    plt.ylabel('negative log likelihood [1e+06]')
+    plt.savefig('objective.png')
 
 plt.show()
