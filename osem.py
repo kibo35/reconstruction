@@ -109,7 +109,6 @@ plt.ylabel('[a.u.]')
 plt.savefig('profile.png')
 
 if obj:
-    objs    = np.array(objs)
     plt.figure()
     plt.suptitle('Convergence')
     plt.plot(objs, '.-')
