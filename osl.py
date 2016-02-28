@@ -105,7 +105,6 @@ plt.subplot(132)
 plt.title('OSEM, filter = {} [pix]\nRMSE = {:.3f}'.format(sfwhm, np.sqrt((recons[0] - image) ** 2).mean()))
 plt.imshow(recons[0], vmax = 1)
 plt.axis('off')
-
 plt.subplot(133)
 plt.title('OSL-IRS, beta = {}\nRMSE = {:.3f}'.format(beta, np.sqrt((recons[1] - image) ** 2).mean()))
 plt.imshow(recons[1], vmax = 1)
