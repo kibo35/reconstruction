@@ -18,9 +18,9 @@ parser.add_argument('--niter', '-i', default=10, type=int,
                     help='number of iteration')
 parser.add_argument('--nsub', '-s', default=10, type=int,
                     help='number of subset')
-parser.add_argument('--filter', '-f', default=1.333, type=float,
+parser.add_argument('--filter', '-f', default=1.5, type=float,
                     help='smoothing filer FWHM [pix]')
-parser.add_argument('--beta', '-b', default=0.001, type=float,
+parser.add_argument('--beta', '-b', default=0.02, type=float,
                     help='prior strength')
 args = parser.parse_args()
 
@@ -68,7 +68,6 @@ for b, rw in [(0, False), (beta, True)]:
         weight  = np.ones(shape)
 
     # iteration
-    objs    = []
     for iter in xrange(niter):
         print   'iter', iter
         order   = np.random.permutation(range(nsub))
@@ -93,7 +92,7 @@ for b, rw in [(0, False), (beta, True)]:
 fbp = iradon(sinogram, theta=theta, circle=True)
 if sfwhm > 0:
     fbp = gaussian_filter(fbp, sfwhm / 2.355)
-    recon[0]    = gaussian_filter(recon[0], sfwhm / 2.355)
+    recons[0]    = gaussian_filter(recons[0], sfwhm / 2.355)
 
 # display
 plt.figure(figsize = (10, 5))
