@@ -9,7 +9,7 @@ from skimage.io import imread
 from skimage import data_dir
 from skimage.transform import radon, rescale, iradon
 from skimage.draw import circle
-from scipy.ndimage import gaussian_filter, uniform_filter
+from scipy.ndimage import gaussian_filter, uniform_filter, median_filter
 
 parser = argparse.ArgumentParser(description="Simulation of Green's one step late algorithm with iteratively reweighted shrinkage")
 parser.add_argument('--count', '-c', default=2e6, type=float,
@@ -22,6 +22,8 @@ parser.add_argument('--filter', '-f', default=1.5, type=float,
                     help='smoothing filer FWHM [pix]')
 parser.add_argument('--beta', '-b', default=0.02, type=float,
                     help='prior strength')
+parser.add_argument('--median', action='store_true',
+                    help='median root prior')
 args = parser.parse_args()
 
 count   = args.count
@@ -29,6 +31,7 @@ niter   = args.niter
 nsub    = args.nsub
 sfwhm   = args.filter
 beta    = args.beta
+median  = args.median
 
 # shepp-logan phantom
 image   = imread(data_dir + "/phantom.png", as_grey=True)
@@ -56,7 +59,7 @@ for sub in xrange(nsub):
 
 # comparison OSEM, IRS
 recons  = []
-for b, rw in [(0, False), (beta, True)]:
+for b, rw, m in [(0, False, False), (beta, True, False), (beta, True, median)]:
     print   'beta', b, 'rw', rw
     
     # initial
@@ -78,12 +81,18 @@ for b, rw in [(0, False), (beta, True)]:
             bp  = iradon(ratio, theta=theta[views], filter=None, circle=True)
         
             if b > 0:
-                regular = (recon - uniform_filter(recon)) * b
+                if m:
+                    regular = (recon - median_filter(recon, 3)) * b
+                else:
+                    regular = (recon - uniform_filter(recon)) * b
                 if rw:
                     regular *= 0.5 / (weight + 1e-6)
                 recon   *= bp / (wgts[sub] + regular + 1e-6)
                 if rw:
-                    weight  = np.abs(recon - uniform_filter(recon))
+                    if m:
+                        weight  = np.abs(recon - median_filter(recon, 3))
+                    else:
+                        weight  = np.abs(recon - uniform_filter(recon))
             else:
                 recon   *= bp / (wgts[sub] + 1e-6)
 
@@ -97,20 +106,24 @@ if sfwhm > 0:
 # display
 plt.figure(figsize = (10, 5))
 plt.gray()
-plt.subplot(131)
-plt.title('FBP, filter = {} [pix]\nRMSE = {:.3f}'.format(sfwhm, np.sqrt((fbp - image) ** 2).mean()))
+plt.subplot(141)
+plt.title('FBP\nfilter = {} [pix]\nRMSE = {:.3f}'.format(sfwhm, np.sqrt((fbp - image) ** 2).mean()))
 plt.imshow(fbp, vmin = 0, vmax = 1)
 plt.axis('off')
-plt.subplot(132)
-plt.title('OSEM, filter = {} [pix]\nRMSE = {:.3f}'.format(sfwhm, np.sqrt((recons[0] - image) ** 2).mean()))
+plt.subplot(142)
+plt.title('OSEM\nfilter = {} [pix]\nRMSE = {:.3f}'.format(sfwhm, np.sqrt((recons[0] - image) ** 2).mean()))
 plt.imshow(recons[0], vmax = 1)
 plt.axis('off')
-plt.subplot(133)
-plt.title('OSL-IRS, beta = {}\nRMSE = {:.3f}'.format(beta, np.sqrt((recons[1] - image) ** 2).mean()))
+plt.subplot(143)
+plt.title('OSL-IRS\nbeta = {}\nRMSE = {:.3f}'.format(beta, np.sqrt((recons[1] - image) ** 2).mean()))
 plt.imshow(recons[1], vmax = 1)
 plt.axis('off')
+plt.subplot(144)
+plt.title('OSL-IRS-Median\nbeta = {}\nRMSE = {:.3f}'.format(beta, np.sqrt((recons[2] - image) ** 2).mean()))
+plt.imshow(recons[2], vmax = 1)
+plt.axis('off')
 
-plt.subplots_adjust(0, 0, 1, 0.9, 0, 0.1)
+plt.subplots_adjust(0, 0, 1, 0.9, 0, 0.2)
 plt.savefig('osl.png')
 
 plt.figure()
@@ -119,6 +132,7 @@ plt.plot(image[shape[0] / 2 - 3:shape[0] / 2 + 3].mean(axis = 0), label='Phantom
 plt.plot(fbp[shape[0] / 2 - 3:shape[0] / 2 + 3].mean(axis = 0), label='FBP')
 plt.plot(recons[0][shape[0] / 2 - 3:shape[0] / 2 + 3].mean(axis = 0), label='OSEM')
 plt.plot(recons[1][shape[0] / 2 - 3:shape[0] / 2 + 3].mean(axis = 0), label='OSL-IRS')
+plt.plot(recons[2][shape[0] / 2 - 3:shape[0] / 2 + 3].mean(axis = 0), label='OSL-IRS-Median')
 plt.legend(loc=3, prop={'size':10})
 plt.xlabel('X [pix]')
 plt.ylabel('[a.u.]')
